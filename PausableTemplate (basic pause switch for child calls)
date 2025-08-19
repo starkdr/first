@@ -1,0 +1,49 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+contract PausableTemplate {
+    address public owner;
+    bool public paused;
+
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event Paused(address indexed by);
+    event Unpaused(address indexed by);
+    event DidSomething(address indexed by, uint256 value);
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;
+    }
+
+    modifier whenNotPaused() {
+        require(!paused, "Paused");
+        _;
+    }
+
+    constructor() {
+        owner = msg.sender;
+        emit OwnershipTransferred(address(0), msg.sender);
+    }
+
+    function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "Zero address");
+        emit OwnershipTransferred(owner, newOwner);
+        owner = newOwner;
+    }
+
+    function pause() external onlyOwner {
+        paused = true;
+        emit Paused(msg.sender);
+    }
+
+    function unpause() external onlyOwner {
+        paused = false;
+        emit Unpaused(msg.sender);
+    }
+
+    // Example safe function guarded by pause switch
+    function doSomething(uint256 value) external whenNotPaused {
+        // your logic here; we just emit for demo
+        emit DidSomething(msg.sender, value);
+    }
+}
